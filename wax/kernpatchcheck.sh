@@ -15,7 +15,7 @@ check_deps() {
 	done
 }
 
-missing_deps=$(check_deps sfdisk futility binwalk lz4 file)
+missing_deps=$(check_deps sfdisk futility binwalk lz4 file cpio)
 [ "$missing_deps" ] && fail "The following required commands weren't found in PATH:\n${missing_deps}"
 
 cleanup() {
@@ -60,6 +60,15 @@ check_kern() {
 		echo "Missing /bin/bootstrap.sh, cannot determine patch."
 		return 2
 	fi
+	for f in "$(find "$cpio_root"/../.. -maxdepth 1 -type f)"; do
+		if file -b "$f" | grep -qw "cpio"; then
+			(cd "$WORKDIR"; cpio -im bin <"$f" 2>/dev/null)
+			echo -n "Initramfs date: "
+			date -r "$WORKDIR"/bin
+			rm -rf "$WORKDIR"/bin
+			break
+		fi
+	done
 	if grep -q "block_devmode" "$cpio_root"/bin/bootstrap.sh; then
 		echo "WARNING: initramfs appears to check block_devmode in crossystem."
 		echo "Disable WP to bypass, or hope that crossystem is broken (e.g. hana)"
