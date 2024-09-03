@@ -64,7 +64,7 @@ check_kern() {
 		if file -b "$f" | grep -qw "cpio"; then
 			(cd "$WORKDIR"; cpio -im bin <"$f" 2>/dev/null)
 			echo -n "Initramfs date: "
-			date -r "$WORKDIR"/bin
+			date -ur "$WORKDIR"/bin
 			rm -rf "$WORKDIR"/bin
 			break
 		fi
